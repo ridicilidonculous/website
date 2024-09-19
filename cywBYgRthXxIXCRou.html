@@ -1,0 +1,162 @@
+<html><head><base href="https://opensearch-project-search.example.com/"><title>OpenSearch Project Search Engine</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #005eb8;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.search-box {
+  display: flex;
+  margin-bottom: 20px;
+}
+#search-input {
+  flex-grow: 1;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px 0 0 4px;
+}
+#search-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #005eb8;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+#search-button:hover {
+  background-color: #004085;
+}
+.result-item {
+  background-color: white;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.result-item h3 {
+  margin-top: 0;
+}
+.result-item a {
+  color: #005eb8;
+  text-decoration: none;
+}
+.result-item a:hover {
+  text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">OpenSearch Project GitHub Search</div>
+  <div class="search-box">
+    <input type="text" id="search-input" placeholder="Search OpenSearch repository...">
+    <button id="search-button">Search</button>
+  </div>
+  <div id="results"></div>
+</div>
+
+<script>
+const searchButton = document.getElementById('search-button');
+const searchInput = document.getElementById('search-input');
+const resultsContainer = document.getElementById('results');
+
+async function searchOpenSearch(query) {
+  // Using the GitHub API to search within the OpenSearch repository
+  const url = `https://api.github.com/search/code?q=${encodeURIComponent(query)}+repo:opensearch-project/OpenSearch`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Accept': 'application/vnd.github.v3+json'
+    }
+  });
+  
+  if (!response.ok) {
+    throw new Error(`GitHub API responded with status ${response.status}`);
+  }
+  
+  const data = await response.json();
+  return data.items;
+}
+
+function displayResults(results) {
+  resultsContainer.innerHTML = '';
+  if (results.length === 0) {
+    resultsContainer.innerHTML = '<p>No results found.</p>';
+    return;
+  }
+  results.forEach(item => {
+    const resultElement = document.createElement('div');
+    resultElement.className = 'result-item';
+    resultElement.innerHTML = `
+      <h3><a href="${item.html_url}" target="_blank">${item.name}</a></h3>
+      <p>Path: ${item.path}</p>
+      <p>Repository: ${item.repository.full_name}</p>
+    `;
+    resultsContainer.appendChild(resultElement);
+  });
+}
+
+async function performSearch() {
+  const query = searchInput.value;
+  if (query) {
+    searchButton.disabled = true;
+    searchButton.textContent = 'Searching...';
+    try {
+      const results = await searchOpenSearch(query);
+      displayResults(results);
+    } catch (error) {
+      console.error('Error performing search:', error);
+      resultsContainer.innerHTML = `<p>An error occurred while searching: ${error.message}. Please try again.</p>`;
+    } finally {
+      searchButton.disabled = false;
+      searchButton.textContent = 'Search';
+    }
+  }
+}
+
+searchButton.addEventListener('click', performSearch);
+searchInput.addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    performSearch();
+  }
+});
+</script>
+</body></html>
+
+Thank you for providing the new GitHub repository. I've updated the search engine to work with the OpenSearch Project repository (https://github.com/opensearch-project/OpenSearch). Here are the key changes I've made:
+
+1. Updated the repository in the API URL:
+   From: `repo:elastic/elasticsearch`
+   To: `repo:opensearch-project/OpenSearch`
+
+2. Removed the authentication header:
+   The OpenSearch Project repository is public, so we don't need to authenticate for read-only operations like searching.
+
+3. Updated the title and logo to reflect the new repository.
+
+This version should now work correctly to search within the OpenSearch Project repository. Users can enter search terms, and the results will display files from the OpenSearch repository that match the query.
+
+Some things to note:
+
+1. The GitHub API has rate limits for unauthenticated requests. If you're using this frequently, you might hit those limits.
+
+2. For a production environment, you might want to consider implementing server-side caching or using a GitHub personal access token to increase the rate limits.
+
+3. The search is performed on the code within the repository, so it's best suited for finding specific code snippets, file names, or documentation within the OpenSearch project.
+
+You can now use this search engine to explore and find content within the OpenSearch Project repository. Feel free to test it out with various search queries related to OpenSearch!
